@@ -25,9 +25,11 @@ function F = EmissionFactorDutch(varargin)
     % $Author:   edward.barratt  $
     % $Date:   Nov 24 2016 09:19:14  $
     % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      
-    NonMotorwayPath = [fileparts(which('EmissionFactorDutch')), '\Data\DutchEF-NonMotorway.xlsx'];
-    MotorwayPath = [fileparts(which('EmissionFactorDutch')), '\Data\DutchEF-Motorway.xlsx'];
+    
+    FunctionCommand = 'EmissionFactorTools.ReadFromSource.Dutch';
+    FunctionPath = fileparts(which(FunctionCommand));
+    NonMotorwayPath = [FunctionPath, '\Data\DutchEF-NonMotorway.xlsx'];
+    MotorwayPath = [FunctionPath, '\Data\DutchEF-Motorway.xlsx'];
     [year, ~] = datevec(now);
     
     [SFB, SFi] = ismember('-SourceFile', varargin);
