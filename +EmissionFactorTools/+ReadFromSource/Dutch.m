@@ -11,8 +11,8 @@ function F = Dutch(varargin)
     % F = EmissionFactorTools.ReadFromSource.Dutch(Pollutant, VehicleClass)
     % F = EmissionFactorTools.ReadFromSource.Dutch(Pollutant, VehicleClass, SpeedClass)
     % F = EmissionFactorTools.ReadFromSource.Dutch(Pollutant, VehicleClass, SpeedClass)
-    % F = EmissionFactorTools.ReadFromSource.Dutch( ... '-Year', year)
-    % F = EmissionFactorTools.ReadFromSource.Dutch( ... '-SourceFile', filename)
+    % F = EmissionFactorTools.ReadFromSource.Dutch( ... 'Year', year)
+    % F = EmissionFactorTools.ReadFromSource.Dutch( ... 'SourceFile', filename)
     % F = EmissionFactorTools.ReadFromSource.Dutch( ... 'Motorway')
     %
     % Factors are read from spreadsheets downloaded from the Dutch
@@ -32,7 +32,7 @@ function F = Dutch(varargin)
     MotorwayPath = [FunctionPath, '\Data\DutchEF-Motorway.xlsx'];
     [year, ~] = datevec(now);
     
-    [SFB, SFi] = ismember('-SourceFile', varargin);
+    [SFB, SFi] = ismember('SourceFile', varargin);
     if SFB
         SourceFile = varargin{SFi+1};
         varargin(SFi+1) = [];
@@ -43,7 +43,7 @@ function F = Dutch(varargin)
     else
         SourceFile = NonMotorwayPath;
     end
-    [yB, yi] = ismember('-Year', varargin);
+    [yB, yi] = ismember('Year', varargin);
     if yB
         year = varargin{yi+1};
         if ~isequal(year, 'all')
