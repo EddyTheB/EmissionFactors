@@ -1,4 +1,4 @@
-function F = Dutch(varargin)
+function [F, year] = Dutch(varargin)
     % Factors = EmissionFactorTools.ReadFromSource.Dutch
     %
     % Returns a dictionary containing the defined Dutch emission factors

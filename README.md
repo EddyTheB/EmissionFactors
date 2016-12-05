@@ -3,7 +3,7 @@ A set of MATLAB code for organising traffic emission factors.
 
 
 ## Data
-Governments love excel.
+Government agencies love excel.
 
 ### Dutch emission factors
 Dutch emission factors are taken from published excel spreadsheets downloaded from the Dutch government at http://tinyurl.com/EF-NonMotorway and http://tinyurl.com/EF-Motorway for the non-motorway and mororway traffic respectively. They are updated anually and should therefore be periodically updated. The current set were downloaded on the 30th November 2016.
@@ -16,4 +16,8 @@ The default EFT spreadsheet was produced using the EFT's default euro class brea
 
 #### All Buses Euro VI
 The AllBusesEuroVI EFT spreadsheet was produced by adjusting the euro class breakdown so that all buses and coaches are Euro VI class.
+
+### NAEI
+The National Atmospheric Emission Inventory (NAEI) is a more comprehensive set of emision factors, also produced by DEFRA (parts of it are based on the EFT. In particular it has the benifits of providing more pollutants than the EFT, and in a full 11 vehicle class breakdown. Unfortunately it is not easy to access the data within it. The spreadsheet included was populated with values taken from the EMIT database system by Alan McDonald. It contains emission factors for 2012 only.
+
 

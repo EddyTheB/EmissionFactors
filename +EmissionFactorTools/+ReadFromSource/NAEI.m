@@ -1,36 +1,32 @@
-function [Factors, year] = EFT(varargin)
-    % Factors = EmissionFactorTools.ReadFromSource.EFT
+function [Factors, year] = NAEI(varargin)
+    % Factors = EmissionFactorTools.ReadFromSource.NAEI
     %
-    % Returns a dictionary containing the Emission Factor Toolkit emission 
-    % factors for PM10, PM2.5 and NOx.
+    % Returns a structure containing the NAEI emission 
+    % factors for PM10, PM2.5, NO2 and NOx.
     %
     % Default behaviour is to return the factors for the current year and
     % for the default euro class, but other options can be specified.
     %
+    % Infact the default behaviour will fail, since we only have values for
+    % 2012!
+    %
     % USAGE
-    % F = EmissionFactorTools.ReadFromSource.EFT
-    % F = EmissionFactorTools.ReadFromSource.EFT( ... 'Year', year)
-    % F = EmissionFactorTools.ReadFromSource.EFT( ... 'SourceFile', filename)
-    % F = EmissionFactorTools.ReadFromSource.EFT( ... 'Option', Option)
-    % EmissionFactorTools.ReadFromSource.EFT('ListOptions')
-    % EmissionFactorTools.ReadFromSource.EFT( ... 'ListYears')
+    % F = EmissionFactorTools.ReadFromSource.NAEI
+    % F = EmissionFactorTools.ReadFromSource.NAEI( ... 'Year', year)
+    % F = EmissionFactorTools.ReadFromSource.NAEI( ... 'SourceFile', filename)
+    % F = EmissionFactorTools.ReadFromSource.NAEI( ... 'Option', Option)
+    % EmissionFactorTools.ReadFromSource.NAEI('ListOptions')
+    % EmissionFactorTools.ReadFromSource.NAEI( ... 'ListYears')
     %
-    % Factors are read from spreadsheets prepered using the Emission Factor
-    % Toolkit. View the default files to see the format that is required.
-    %
-    % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % $Workfile:   EmissionFactorTools.ReadFromSource.EFT.m  $
-    % $Revision:   1.0  $
-    % $Author:   edward.barratt  $
-    % $Date:   Nov 24 2016 09:19:14  $
-    % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Factors are read from spreadsheets populated with data extracted from
+    % EMIT by Alan McDonald. View the default files to see the format that
+    % is required.
     
-    FunctionCommand = 'EmissionFactorTools.ReadFromSource.EFT';
+    FunctionCommand = 'EmissionFactorTools.ReadFromSource.NAEI';
     FunctionPath = fileparts(which(FunctionCommand));
     
     OptionPaths = struct();
-    OptionPaths.Default = [FunctionPath, '\Data\EFT2016_v7.0_ScotlandResults_DefaultEuroClasses.xlsx'];
-    OptionPaths.BusesEuroVI = [FunctionPath, '\Data\EFT2016_v7.0_ScotlandResults_AllBusesEuroVI.xlsx'];
+    OptionPaths.Default = [FunctionPath, '\Data\NAEI2012 Year 2012_Unit_11VC_2012.xlsx'];
     [year, ~] = datevec(now);
     
     if ismember('ListOptions', varargin)
@@ -59,19 +55,19 @@ function [Factors, year] = EFT(varargin)
     end
     
     if ismember('ListYears', varargin)
-        fprintf('The following years are available:\n')
         [~, sheets, ~] = xlsfinfo(SourceFile);
         sdf = '';
         for shi = 1:numel(sheets)
             sdf = [sdf, ', ', sheets{shi}]; %#ok<AGROW>
         end
         sdf = sdf(3:end);
+        fprintf('The following years are available:\n')
         fprintf('%s\n', sdf)
         Factors = 0;
         return
     end
     
-    [yB, yi] = ismember('-Year', varargin);
+    [yB, yi] = ismember('Year', varargin);
     if yB
         year = varargin{yi+1};
         if ~isequal(year, 'all')
@@ -87,7 +83,7 @@ function [Factors, year] = EFT(varargin)
     end
     
     % Read the source file.
-    [~, ~, raw] = xlsread(SourceFile, sprintf('%04d', year), 'A2:C218');
+    [~, ~, raw] = xlsread(SourceFile, sprintf('%04d', year), 'B6:E534');
     if ~isnan(raw{end, end})
         error('EmissionFactorTools:ReadFromSource:EFT:FileToLong', 'There is data beyond the expected end of the file. Investigate ways to improve this fucntion.')
     end
@@ -99,13 +95,12 @@ function [Factors, year] = EFT(varargin)
     VehClasses = {};
     SpeedClasses = {};
     for rowi = 1:NumRows
-        Name = raw{rowi, 1};
-        Name = strsplit(Name, ' ');
-        SpeedClass = Name{1};
-        VehClass = Name{2};
-        Pollutant = raw{rowi, 2};
+        VehClass = strtrim(raw{rowi, 1});
+        Speed = str2double(raw{rowi, 2});
+        SpeedClass = sprintf('S_%03d', Speed);
+        Pollutant = strtrim(raw{rowi, 3});
         Pollutant = strrep(Pollutant, '.', '');
-        Factor = raw{rowi, 3};
+        Factor = raw{rowi, 4};
         
         if ~ismember(Pollutant, Pollutants)
             Pollutants{end+1} = Pollutant; %#ok<AGROW>
@@ -122,5 +117,3 @@ function [Factors, year] = EFT(varargin)
         Factors.(Pollutant).(VehClass).(SpeedClass) = Factor;
     end
 end
-
-

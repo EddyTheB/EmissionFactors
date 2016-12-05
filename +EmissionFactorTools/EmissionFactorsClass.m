@@ -85,11 +85,11 @@ classdef EmissionFactorsClass < handle
     properties 
         Units@char = 'g/km/vehicle'
         UnitConversion@double = 1
+        Year
     end
     
     properties (Dependent)
         Name
-        Year
         Pollutants
         VehicleClasses
         SpeedClasses
@@ -536,9 +536,11 @@ classdef EmissionFactorsClass < handle
             % StagnantSpeedClass  - string
             %          Which speed class should be used for stagnant
             %          traffic.
-            obj = EmissionFactorsClass;
+            % Year     - the year
+            obj = EmissionFactorTools.EmissionFactorsClass;
             Options.Name = 'Unnamed';
             Options.StagnantSpeedClass = 'Auto';
+            Options.Year = -999;
             Options = checkArguments(Options, varargin);
             if isequal(Options.Name, 'Unnamed')
                 Answers = inputdlg('Emission factors name:');
@@ -548,6 +550,7 @@ classdef EmissionFactorsClass < handle
                 Options.Name = Answers{1};
             end
             obj.Name = Options.Name;
+            obj.Year = Options.Year;
             obj.Pollutants = fieldnames(S);
             obj.VehicleClasses = fieldnames(S.(obj.Pollutants{1}));
             obj.SpeedClasses = fieldnames(S.(obj.Pollutants{1}).(obj.VehicleClasses{1}));
