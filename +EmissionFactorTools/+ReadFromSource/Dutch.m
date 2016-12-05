@@ -1,26 +1,26 @@
-function F = EmissionFactorDutch(varargin)
-    % Factors = EmissionFactorDutch
+function F = Dutch(varargin)
+    % Factors = EmissionFactorTools.ReadFromSource.Dutch
     %
     % Returns a dictionary containing the defined Dutch emission factors
     % for non motorways for PM10, PM2.5, NO2 and NOx, or a single emission
     % factor, depending on input arguments.
     %
     % USAGE
-    % F = EmissionFactorDutch
-    % F = EmissionFactorDutch(Pollutant)
-    % F = EmissionFactorDutch(Pollutant, VehicleClass)
-    % F = EmissionFactorDutch(Pollutant, VehicleClass, SpeedClass)
-    % F = EmissionFactorDutch(Pollutant, VehicleClass, SpeedClass)
-    % F = EmissionFactorDutch( ... '-Year', year)
-    % F = EmissionFactorDutch( ... '-SourceFile', filename)
-    % F = EmissionFactorDutch( ... 'Motorway')
+    % F = EmissionFactorTools.ReadFromSource.Dutch
+    % F = EmissionFactorTools.ReadFromSource.Dutch(Pollutant)
+    % F = EmissionFactorTools.ReadFromSource.Dutch(Pollutant, VehicleClass)
+    % F = EmissionFactorTools.ReadFromSource.Dutch(Pollutant, VehicleClass, SpeedClass)
+    % F = EmissionFactorTools.ReadFromSource.Dutch(Pollutant, VehicleClass, SpeedClass)
+    % F = EmissionFactorTools.ReadFromSource.Dutch( ... '-Year', year)
+    % F = EmissionFactorTools.ReadFromSource.Dutch( ... '-SourceFile', filename)
+    % F = EmissionFactorTools.ReadFromSource.Dutch( ... 'Motorway')
     %
     % Factors are read from spreadsheets downloaded from the Dutch
     % government. As of November 2015 the following links worked: 
     % http://tinyurl.com/EF-NonMotorway and http://tinyurl.com/EF-Motorway 
     %
     % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % $Workfile:   EmissionFactorDutch.m  $
+    % $Workfile:   EmissionFactorTools.ReadFromSource.Dutch.m  $
     % $Revision:   1.0  $
     % $Author:   edward.barratt  $
     % $Date:   Nov 24 2016 09:19:14  $
