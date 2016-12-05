@@ -2,15 +2,10 @@ function F = Dutch(varargin)
     % Factors = EmissionFactorTools.ReadFromSource.Dutch
     %
     % Returns a dictionary containing the defined Dutch emission factors
-    % for non motorways for PM10, PM2.5, NO2 and NOx, or a single emission
-    % factor, depending on input arguments.
+    % for non motorways for PM10, PM2.5, NO2 and NOx.
     %
     % USAGE
     % F = EmissionFactorTools.ReadFromSource.Dutch
-    % F = EmissionFactorTools.ReadFromSource.Dutch(Pollutant)
-    % F = EmissionFactorTools.ReadFromSource.Dutch(Pollutant, VehicleClass)
-    % F = EmissionFactorTools.ReadFromSource.Dutch(Pollutant, VehicleClass, SpeedClass)
-    % F = EmissionFactorTools.ReadFromSource.Dutch(Pollutant, VehicleClass, SpeedClass)
     % F = EmissionFactorTools.ReadFromSource.Dutch( ... 'Year', year)
     % F = EmissionFactorTools.ReadFromSource.Dutch( ... 'SourceFile', filename)
     % F = EmissionFactorTools.ReadFromSource.Dutch( ... 'Motorway')
@@ -117,47 +112,6 @@ function F = Dutch(varargin)
             end
             Years = year;
             YearsRowNums = YearsRowNums(yi);
-        end
-
-        % See what factors have been requested.
-        NumVars = numel(varargin);
-        if NumVars > 0
-            % Pollutant Specified.
-            [Is, Pi] = ismember(varargin{1}, Pollutants);
-            if ~Is
-                error('EmissionFactorsDutch:UnknownPollutant', 'Pollutant ''%s'' is not known.', varargin{1})
-            end
-            Pollutants = Pollutants(Pi);
-            PScales = PScales(Pi);
-            PolRowNums = PolRowNums(Pi);
-            PYearExtra = PYearExtra(Pi);
-        end
-        if NumVars > 1
-            % Vehicle class specified.
-            [Is, Pi] = ismember(varargin{2}, Vehicles);
-            if ~Is
-                error('EmissionFactorsDutch:UnknownVehicleClass', 'Vehicle Class ''%s'' is not known', varargin{2})
-            end
-            Vehicles = Vehicles(Pi);
-            VehColNums = VehColNums(Pi);
-        end
-        if NumVars > 1
-            % Vehicle class specified.
-            [Is, Pi] = ismember(varargin{2}, Vehicles);
-            if ~Is
-                error('EmissionFactorsDutch:UnknownVehicleClass', 'Vehicle Class ''%s'' is not known', varargin{2})
-            end
-            Vehicles = varargin(2);
-            VehColNums = VehColNums(Pi);
-        end
-        if NumVars > 2
-            % speed class specified.
-            [Is, Pi] = ismember(varargin{3}, SpeedClasses);
-            if ~Is
-                error('EmissionFactorsDutch:UnknownSpeedClass', 'Speed Class ''%s'' is not known', varargin{3})
-            end
-            SpeedClasses = varargin(3);
-            SpeedClassColNums = SpeedClassColNums(Pi);
         end
         
         % Populate the structure.
