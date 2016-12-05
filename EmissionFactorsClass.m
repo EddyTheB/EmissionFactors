@@ -6,6 +6,8 @@ classdef EmissionFactorsClass < handle
     % Name           - string
     %                  A name for the emission factor scheme used in this
     %                  object.
+    % Year           - year
+    %                  The year for which the factors are relevent.
     % Pollutants     - cell
     %                  The pollutants available in the specified scheme.
     % VehicleClasses - cell
@@ -87,6 +89,7 @@ classdef EmissionFactorsClass < handle
     
     properties (Dependent)
         Name
+        Year
         Pollutants
         VehicleClasses
         SpeedClasses
