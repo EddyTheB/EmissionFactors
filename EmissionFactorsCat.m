@@ -87,11 +87,9 @@ classdef EmissionFactorsCat < handle
                 EFTStruct = EmissionFactorTools.ReadFromSource.EFT('Option', 'BusesEuroVI');
                 Catalogue.EFT_BusesEuroVI = EmissionFactorTools.EmissionFactorsClass.ImportFactorStruct(EFTStruct, 'Name', 'EFT_BusesEuroVI', 'StagnantSpeedClass', 'Ignore');    
                 Catalogue.EFT_BusesEuroVI.Protected = true;
-                NAEIStruct = EmissionFactorTools.ReadFromSource.EFT('Option', 'Default');
+                NAEIStruct = EmissionFactorTools.ReadFromSource.NAEI('Option', 'Default');
                 Catalogue.NAEI_Default2012 = EmissionFactorTools.EmissionFactorsClass.ImportFactorStruct(NAEIStruct, 'Name', 'NAEI_Default2012', 'StagnantSpeedClass', 'Ignore');
                 Catalogue.NAEI_Default2012.Protected = true;
-
-                %Catalogue.EFT_Default = EmissionFactorTools.EmissionFactorsClass.ImportFactorStruct(EmissionFactorTools.ReadFromSource.EFT('year', 2016), 'Name', 'Dutch', 'StagnantSpeedClass', 'Stagnated');
                 obj.FactorCatalogue = Catalogue;
                 obj.FactorNameP = obj.FactorNames{1};
                 obj.FactorApportionment = obj.DefaultFactorApportionment();
@@ -154,23 +152,27 @@ classdef EmissionFactorsCat < handle
                     FN = obj.FactorNames{FNi};
                     if ismember(FN, FactorApportionmentNames)
                         FC_ = struct;
-                        for Pi = 1:numel(obj.FactorCatalogue.(FN).Pollutants)
-                            PP = obj.FactorCatalogue.(FN).Pollutants{Pi};
-                            FC_.(PP) = struct;
-                            for Vi = 1:numel(obj.FactorCatalogue.(FN).VehicleClasses)
-                                VV = obj.FactorCatalogue.(FN).VehicleClasses{Vi};
-                                if ismember(VV, fieldnames(obj.FactorApportionment.(FN)))
-                                    for Wi = 1:numel(obj.FactorApportionment.(FN).(VV))
-                                        WW = obj.FactorApportionment.(FN).(VV){Wi};
-                                        FC_.(PP).(WW) = obj.FactorCatalogue.(FN).Factors.(PP).(VV);
+                        for Yi = 1:numel(obj.FactorCatalogue.(FN).Years)
+                            YY = obj.FactorCatalogue.(FN).Years{Yi};
+                            FC_.(YY) = struct;
+                            for Pi = 1:numel(obj.FactorCatalogue.(FN).Pollutants)
+                                PP = obj.FactorCatalogue.(FN).Pollutants{Pi};
+                                FC_.(YY).(PP) = struct;
+                                for Vi = 1:numel(obj.FactorCatalogue.(FN).VehicleClasses)
+                                    VV = obj.FactorCatalogue.(FN).VehicleClasses{Vi};
+                                    if ismember(VV, fieldnames(obj.FactorApportionment.(FN)))
+                                        for Wi = 1:numel(obj.FactorApportionment.(FN).(VV))
+                                            WW = obj.FactorApportionment.(FN).(VV){Wi};
+                                            FC_.(YY).(PP).(WW) = obj.FactorCatalogue.(FN).Factors.(YY).(PP).(VV);
+                                        end
                                     end
                                 end
                             end
                         end
-                        AFC.(FN) = EmissionFactors.ImportFactorStruct(FC_, ...
+                        AFC.(FN) = EmissionFactorTools.EmissionFactorsClass.ImportFactorStruct(FC_, ...
                             'Name', sprintf('%s-Apportioned', FN), ...
                             'StagnantSpeedClass', obj.FactorCatalogue.(FN).StagnantSpeedClass);
-                    end 
+                    end
                 end
             end
             val = AFC;
