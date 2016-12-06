@@ -9,11 +9,9 @@ function [Factors, year] = EFT(varargin)
     %
     % USAGE
     % F = EmissionFactorTools.ReadFromSource.EFT
-    % F = EmissionFactorTools.ReadFromSource.EFT( ... 'Year', year)
     % F = EmissionFactorTools.ReadFromSource.EFT( ... 'SourceFile', filename)
     % F = EmissionFactorTools.ReadFromSource.EFT( ... 'Option', Option)
     % EmissionFactorTools.ReadFromSource.EFT('ListOptions')
-    % EmissionFactorTools.ReadFromSource.EFT( ... 'ListYears')
     %
     % Factors are read from spreadsheets prepered using the Emission Factor
     % Toolkit. View the default files to see the format that is required.
@@ -58,69 +56,44 @@ function [Factors, year] = EFT(varargin)
         SourceFile = OptionPaths.Default;
     end
     
-    if ismember('ListYears', varargin)
-        fprintf('The following years are available:\n')
-        [~, sheets, ~] = xlsfinfo(SourceFile);
-        sdf = '';
-        for shi = 1:numel(sheets)
-            sdf = [sdf, ', ', sheets{shi}]; %#ok<AGROW>
-        end
-        sdf = sdf(3:end);
-        fprintf('%s\n', sdf)
-        Factors = 0;
-        return
-    end
-    
-    [yB, yi] = ismember('-Year', varargin);
-    if yB
-        year = varargin{yi+1};
-        if ~isequal(year, 'all')
-            year_ = str2double(year);
-            if isnan(year_)
-                error('EmissionFactorTools:ReadFromSource:EFT:UnrecognizedYear', 'Year ''%s'' is not understood.', year)
-            else
-                year = year_;
-            end
-        end
-        varargin(yi+1) = [];
-        varargin(yi) = [];
-    end
-    
-    % Read the source file.
-    [~, ~, raw] = xlsread(SourceFile, sprintf('%04d', year), 'A2:C218');
-    if ~isnan(raw{end, end})
-        error('EmissionFactorTools:ReadFromSource:EFT:FileToLong', 'There is data beyond the expected end of the file. Investigate ways to improve this fucntion.')
-    end
-    raw = raw(1:end-1, :);
-    
-    [NumRows, ~] = size(raw);
+    [~, years, ~] = xlsfinfo(SourceFile);
     Factors = struct;
-    Pollutants = {};
-    VehClasses = {};
-    SpeedClasses = {};
-    for rowi = 1:NumRows
-        Name = raw{rowi, 1};
-        Name = strsplit(Name, ' ');
-        SpeedClass = Name{1};
-        VehClass = Name{2};
-        Pollutant = raw{rowi, 2};
-        Pollutant = strrep(Pollutant, '.', '');
-        Factor = raw{rowi, 3};
+    for yi = 1:numel(years)
+        ystr = years{yi};
+        ystr_ = ['Y', ystr];
+        % Read the source file.
+        fprintf('Reading EFT sheet for %s.\n', ystr)
+        [~, ~, raw] = xlsread(SourceFile, ystr, 'A2:C218');
+        if ~isnan(raw{end, end})
+            error('EmissionFactorTools:ReadFromSource:EFT:FileToLong', 'There is data beyond the expected end of the file. Investigate ways to improve this fucntion.')
+        end
+        raw = raw(1:end-1, :);
+    
+        [NumRows, ~] = size(raw);
+        FactorsY = struct;
+        Pollutants = {};
+        VehClasses = {};
+        SpeedClasses = {};
+        for rowi = 1:NumRows
+            Name = raw{rowi, 1};
+            Name = strsplit(Name, ' ');
+            SpeedClass = Name{1};
+            VehClass = Name{2};
+            Pollutant = raw{rowi, 2};
+            Pollutant = strrep(Pollutant, '.', '');
+            Factor = raw{rowi, 3};
         
-        if ~ismember(Pollutant, Pollutants)
-            Pollutants{end+1} = Pollutant; %#ok<AGROW>
-            %Factors.(Pollutant) = struct;
+            if ~ismember(Pollutant, Pollutants)
+                Pollutants{end+1} = Pollutant; %#ok<AGROW>
+            end
+            if ~ismember(VehClass, VehClasses)
+                VehClasses{end+1} = VehClass; %#ok<AGROW>
+            end
+            if ~ismember(SpeedClass, SpeedClasses)
+                SpeedClasses{end+1} = SpeedClass; %#ok<AGROW>
+            end
+            FactorsY.(Pollutant).(VehClass).(SpeedClass) = Factor;
         end
-        if ~ismember(VehClass, VehClasses)
-            VehClasses{end+1} = VehClass; %#ok<AGROW>
-            %Factors.(Pollutant).(VehClass) = struct;
-        end
-        if ~ismember(SpeedClass, SpeedClasses)
-            SpeedClasses{end+1} = SpeedClass; %#ok<AGROW>
-            %Factors.(Pollutant).(VehClass) = struct;
-        end
-        Factors.(Pollutant).(VehClass).(SpeedClass) = Factor;
+        Factors.(ystr_) = FactorsY;
     end
 end
-
-

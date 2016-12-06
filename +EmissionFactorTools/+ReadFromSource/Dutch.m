@@ -1,4 +1,4 @@
-function [F, year] = Dutch(varargin)
+function F = Dutch(varargin)
     % Factors = EmissionFactorTools.ReadFromSource.Dutch
     %
     % Returns a dictionary containing the defined Dutch emission factors
@@ -6,7 +6,6 @@ function [F, year] = Dutch(varargin)
     %
     % USAGE
     % F = EmissionFactorTools.ReadFromSource.Dutch
-    % F = EmissionFactorTools.ReadFromSource.Dutch( ... 'Year', year)
     % F = EmissionFactorTools.ReadFromSource.Dutch( ... 'SourceFile', filename)
     % F = EmissionFactorTools.ReadFromSource.Dutch( ... 'Motorway')
     %
@@ -25,7 +24,6 @@ function [F, year] = Dutch(varargin)
     FunctionPath = fileparts(which(FunctionCommand));
     NonMotorwayPath = [FunctionPath, '\Data\DutchEF-NonMotorway.xlsx'];
     MotorwayPath = [FunctionPath, '\Data\DutchEF-Motorway.xlsx'];
-    [year, ~] = datevec(now);
     
     [SFB, SFi] = ismember('SourceFile', varargin);
     if SFB
@@ -37,20 +35,6 @@ function [F, year] = Dutch(varargin)
         varargin(end) = [];
     else
         SourceFile = NonMotorwayPath;
-    end
-    [yB, yi] = ismember('Year', varargin);
-    if yB
-        year = varargin{yi+1};
-        if ~isequal(year, 'all')
-            year_ = str2double(year);
-            if isnan(year_)
-                error('EmissionFactorsDutch:UnrecognizedYear', 'Year ''%s'' is not understood.', year)
-            else
-                year = year_;
-            end
-        end
-        varargin(yi+1) = [];
-        varargin(yi) = [];
     end
     
     % Read the source file.
@@ -84,8 +68,7 @@ function [F, year] = Dutch(varargin)
         PYearExtra = [3, 3, 3, 3, 3, 4, 4, 4];
         SpeedClasses = {'Stagnated', 'Normal', 'Smooth', 'LargeRoad'};
         SpeedClassColNums = 1:4;
-
-        
+ 
         % Find the column numbers for the different vehicle classes.
         VehColNums = nan(1, numel(Vehicles));
         for vi = 1:numel(Vehicles)
@@ -105,61 +88,35 @@ function [F, year] = Dutch(varargin)
         Years = [Years{:}];
         Years = Years(isfinite(Years));
         YearsRowNums = (1:numel(Years));
-        if ~isequal(year, 'all')
-            [yB, yi] = ismember(year, Years);
-            if ~yB
-                error('EmissionFactorsDutch:UnknownYear', 'Year ''%d'' is not known.', year)
-            end
-            Years = year;
-            YearsRowNums = YearsRowNums(yi);
-        end
         
         % Populate the structure.
         F = struct;
         for Yi = 1:numel(Years)
             Y = Years(Yi);
             YRow = YearsRowNums(Yi);
-            F.(sprintf('Y_%d', Y)) = struct;
+            F.(sprintf('Y%04d', Y)) = struct;
             for Pi = 1:numel(Pollutants)
                 P = Pollutants{Pi};
                 PRowStart = PolRowNums(Pi);
                 PRowExtra = PYearExtra(Pi);
                 PScale = PScales(Pi);
-                F.(sprintf('Y_%d', Y)).(P) = struct;
+                F.(sprintf('Y%04d', Y)).(P) = struct;
                 for Vi = 1:numel(Vehicles)
                     V = Vehicles{Vi};
                     VColStart = VehColNums(Vi);
-                    F.(sprintf('Y_%d', Y)).(P).(V) = struct;
+                    F.(sprintf('Y%04d', Y)).(P).(V) = struct;
                     for Si = 1:numel(SpeedClasses)
                         S = SpeedClasses{Si};
                         SCol = SpeedClassColNums(Si);
                         Row = PRowStart + YRow + PRowExtra;
                         Col = VColStart + SCol;
                         %fprintf('%s %s %s %d: %dx%d = %f\n', P, V, S, Y, Row, Col, raw{Row, Col})
-                        F.(sprintf('Y_%d', Y)).(P).(V).(S) = raw{Row, Col} * 10^PScale;
+                        F.(sprintf('Y%04d', Y)).(P).(V).(S) = raw{Row, Col} * 10^PScale;
                     end
                 end
             end
         end
     end
-    
-    
-    % That's the structure produced, now simplify it.
-    FFNs = fieldnames(F);
-    while numel(FFNs) == 1
-        F = F.(FFNs{1});
-        try
-            FFNs = fieldnames(F);
-        catch E
-            if ~isequal(E.identifier, 'MATLAB:UndefinedFunction')
-                disp(E)
-                rethrow(E)
-            end
-            break
-        end
-    end
-    
- 
 end
 
 

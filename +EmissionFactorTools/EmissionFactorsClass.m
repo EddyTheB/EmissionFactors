@@ -6,8 +6,8 @@ classdef EmissionFactorsClass < handle
     % Name           - string
     %                  A name for the emission factor scheme used in this
     %                  object.
-    % Year           - year
-    %                  The year for which the factors are relevent.
+    % Years           - numeric vector
+    %                  The years for which emission factors are available.
     % Pollutants     - cell
     %                  The pollutants available in the specified scheme.
     % VehicleClasses - cell
@@ -23,23 +23,23 @@ classdef EmissionFactorsClass < handle
     %                  default 'Ignore'.
     % Factors        - struct
     %                  A structure of the emission factors in the specified
-    %                  scheme. The structure hierachy goes Pollutant -
-    %                  VehicleClass - SpeedClass. So, for example, to get
+    %                  scheme. The structure hierachy goes Year - Pollutant
+    %                  - VehicleClass - SpeedClass. So, for example, to get
     %                  the PM10 emissions for a Bus travelling in a speed
-    %                  class 'Smooth', you would call
-    %                  EmissionFactor.PM10.Bus.Smooth.
+    %                  class 'Smooth' in 2016, you would call
+    %                  EmissionFactor.Y2016.PM10.Bus.Smooth.
     % Units          - string
     %                  The units used for the emission factors.
-    %                  Note. Changing this property has no effect.
+    %                  Note. Changing this property has no effect as yet.
     %                  default 'g/km/vehicle'
     % UnitConversion - numeric scaler
     %                  The factor that would be used to convert to
     %                  'g/km/vehicle'
-    %                  Note. Changing this property has no effect.
+    %                  Note. Changing this property has no effect as yet.
     %                  default 1
     %
     % METHODS
-    % EditFactor(Pollutant, VehicleClass, SpeedClass, Value)
+    % EditFactor(Year, Pollutant, VehicleClass, SpeedClass, Value)
     %                  Sets the emission factor of the specified pollutant,
     %                  vehicle and speed to the specified value.
     % Multiply(Number, OptionalArguments)
@@ -85,11 +85,11 @@ classdef EmissionFactorsClass < handle
     properties 
         Units@char = 'g/km/vehicle'
         UnitConversion@double = 1
-        Year
     end
     
     properties (Dependent)
         Name
+        Years
         Pollutants
         VehicleClasses
         SpeedClasses
@@ -103,6 +103,7 @@ classdef EmissionFactorsClass < handle
     
     properties (SetAccess=private, GetAccess=private)
         NameP@char
+        YearsP
         PollutantsP@cell
         VehicleClassesP@cell
         SpeedClassesP@cell
@@ -124,6 +125,18 @@ classdef EmissionFactorsClass < handle
                 obj.NameP = val;
             end
         end % function set.Name(obj, val)
+        
+        function val = get.Years(obj)
+            val = obj.YearsP;
+        end % function val = get.Years(obj)
+        
+        function set.Years(obj, val)
+            if obj.Protected
+                error('EmissionFactorsClass:SetYears:Protected', 'Cannot edit emission factors ''%s'', they are protected.', obj.Name)
+            else
+                obj.YearsP = val;
+            end
+        end % function set.Years(obj, val)
         
         function val = get.Pollutants(obj)
             val = obj.PollutantsP;
@@ -173,13 +186,17 @@ classdef EmissionFactorsClass < handle
             else
                 % Iterate through all the possibilities, to make sure that
                 % the new structure is in the right format.
-                for PI = 1:numel(obj.Pollutants)
-                    P = obj.Pollutants{PI};
-                    for VI = 1:numel(obj.VehicleClasses)
-                        V = obj.VehicleClasses{VI};
-                        for SI = 1:numel(obj.SpeedClasses)
-                            S = obj.SpeedClasses{SI};
-                            G.(P).(V).(S) = val.(P).(V).(S);
+                for YI = 1:numel(obj.Years)
+                    Y = obj.Years{YI};
+                    Y = obj.YearString(Y);
+                    for PI = 1:numel(obj.Pollutants)
+                        P = obj.Pollutants{PI};
+                        for VI = 1:numel(obj.VehicleClasses)
+                            V = obj.VehicleClasses{VI};
+                            for SI = 1:numel(obj.SpeedClasses)
+                                S = obj.SpeedClasses{SI};
+                                G.(Y).(P).(V).(S) = val.(Y).(P).(V).(S);
+                            end
                         end
                     end
                 end
@@ -201,22 +218,25 @@ classdef EmissionFactorsClass < handle
         end
         
         %% Other functions
-        function EditFactor(obj, Pollutant, VehicleClass, SpeedClass, Value)
+        function EditFactor(obj, Year, Pollutant, VehicleClass, SpeedClass, Value)
             % Sets the emission factor of the specified pollutant, vehicle
             % and speed to the specified value.
             % USAGE
-            % EmissionFactorsClass.EditFactor(obj, Pollutant, VehicleClass, SpeedClass, Value)
+            % EmissionFactorsClass.EditFactor(obj, Year, Pollutant, VehicleClass, SpeedClass, Value)
             if obj.Protected
                 error('EmissionFactorsClass:EditFactor:Protected', 'Cannot edit emission factors ''%s'', they are protected.', obj.Name)
             end
-            obj.FactorsP.(Pollutant).(VehicleClass).(SpeedClass) = Value;
-        end % function EditFactor(obj, Pollutant, VehicleClass, SpeedClass, Value)
+            YearS = obj.YearString(Year);
+            obj.FactorsP.(YearS).(Pollutant).(VehicleClass).(SpeedClass) = Value;
+        end % function EditFactor(obj, Year, Pollutant, VehicleClass, SpeedClass, Value)
         
         function Multiply(obj, Number, varargin)
             % Multiply the specified factor(s) by the specified value.
             % USAGE
             % Multiply(obj, Factor)
             %         - apply to all factors.
+            % Multiply(obj, Factor, 'Year', Year)
+            %         - apply to all factors for specified year.
             % Multiply(obj, Factor, 'Pollutant', Pollutant)
             %         - apply to all factors for specified pollutant.
             % Multiply(obj, Factor, 'VehicleClass', VehicleClass)
@@ -228,9 +248,15 @@ classdef EmissionFactorsClass < handle
             if obj.Protected
                 error('EmissionFactorsClass:Multiply:Protected', 'Cannot edit emission factors ''%s'', they are protected.', obj.Name)
             end
+            [YB, YI] = ismember('Year', varargin);
             [PB, PI] = ismember('Pollutant', varargin);
             [VB, VI] = ismember('VehicleClass', varargin);
             [SB, SI] = ismember('SpeedClass', varargin);
+            if YB
+                Ys = varargin(YI+1);
+            else
+                Ys = obj.Years;
+            end
             if PB
                 Ps = varargin(PI+1);
             else
@@ -246,17 +272,21 @@ classdef EmissionFactorsClass < handle
             else
                 Ss = obj.SpeedClasses;
             end
-            for PI = 1:numel(Ps)
-                P = Ps{PI};
-                for VI = 1:numel(Vs)
-                    V = Vs{VI};
-                    for SI = 1:numel(Ss)
-                        S = Ss{SI};
-                        W = obj.Factors.(P).(V).(S) * Number;
-                        if W < 0
-                            obj.Factors.(P).(V).(S) = 0;
-                        else
-                            obj.Factors.(P).(V).(S) = W;
+            for YI = 1:numel(Ys)
+                Y = Ys{YI};
+                Y = obj.YearString(Y);
+                for PI = 1:numel(Ps)
+                    P = Ps{PI};
+                    for VI = 1:numel(Vs)
+                        V = Vs{VI};
+                        for SI = 1:numel(Ss)
+                            S = Ss{SI};
+                            W = obj.Factors.(Y).(P).(V).(S) * Number;
+                            if W < 0
+                                obj.Factors.(Y).(P).(V).(S) = 0;
+                            else
+                                obj.Factors.(Y).(P).(V).(S) = W;
+                            end
                         end
                     end
                 end
@@ -268,6 +298,8 @@ classdef EmissionFactorsClass < handle
             % USAGE
             % Add(obj, Factor)
             %         - apply to all factors.
+            % Add(obj, Factor, 'Year', Year)
+            %         - apply to all factors for specified pollutant.
             % Add(obj, Factor, 'Pollutant', Pollutant)
             %         - apply to all factors for specified pollutant.
             % Add(obj, Factor, 'VehicleClass', VehicleClass)
@@ -279,9 +311,15 @@ classdef EmissionFactorsClass < handle
             if obj.Protected
                 error('EmissionFactorsClass:Add:Protected', 'Cannot edit emission factors ''%s'', they are protected.', obj.Name)
             end
+            [YB, YI] = ismember('Year', varargin);
             [PB, PI] = ismember('Pollutant', varargin);
             [VB, VI] = ismember('VehicleClass', varargin);
             [SB, SI] = ismember('SpeedClass', varargin);
+            if YB
+                Ys = varargin(YI+1);
+            else
+                Ys = obj.Years;
+            end
             if PB
                 Ps = varargin(PI+1);
             else
@@ -297,17 +335,21 @@ classdef EmissionFactorsClass < handle
             else
                 Ss = obj.SpeedClasses;
             end
-            for PI = 1:numel(Ps)
-                P = Ps{PI};
-                for VI = 1:numel(Vs)
-                    V = Vs{VI};
-                    for SI = 1:numel(Ss)
-                        S = Ss{SI};
-                        W = obj.Factors.(P).(V).(S) + Number;
-                        if W < 0
-                            obj.Factors.(P).(V).(S) = 0;
-                        else
-                            obj.Factors.(P).(V).(S) = W;
+            for YI = 1:numel(Ys)
+                Y = Ys{YI};
+                Y = obj.YearString(Y);
+                for PI = 1:numel(Ps)
+                    P = Ps{PI};
+                    for VI = 1:numel(Vs)
+                        V = Vs{VI};
+                        for SI = 1:numel(Ss)
+                            S = Ss{SI};
+                            W = obj.Factors.(Y).(P).(V).(S) + Number;
+                            if W < 0
+                                obj.Factors.(Y).(P).(V).(S) = 0;
+                            else
+                                obj.Factors.(Y).(P).(V).(S) = W;
+                            end
                         end
                     end
                 end
@@ -359,10 +401,12 @@ classdef EmissionFactorsClass < handle
             end
             
             obj.Pollutants{end+1} = PollutantName;
-            FF = obj.Factors;
-            FF.(PollutantName) = Like;
+            for Yi = 1:numel(obj.Years)
+                Y = obj.YearString(obj.Years{Yi});
+                FF.(Y).(PollutantName) = FF.(Y).(Like);
+            end
             obj.Factors = FF;
-            
+                        
             if Options.Value ~= -999
                 obj.Multiply(0, 'Pollutant', PollutantName)
                 obj.Add(Options.Value, 'Pollutant', PollutantName)
@@ -379,13 +423,17 @@ classdef EmissionFactorsClass < handle
             if obj.Protected
                 error('EmissionFactorsClass:RemovePollutant:Protected', 'Cannot edit emission factors ''%s'', they are protected.', obj.Name)
             end
+            
+            if numel(obj.Pollutants) == 1
+                error('EmissionFactorsClass:RemovePollutant:LastPollutant', 'Cannot remove only pollutant.')
+            end
+            
             if ismember(PollutantName, obj.Pollutants);
-                if numel(obj.Pollutants) > 1
-                    obj.FactorsP = rmfield(obj.FactorsP, PollutantName);
-                    obj.Pollutants = fieldnames(obj.Factors);
-                else
-                    error('EmissionFactorsClass:RemovePollutant:LastPollutant', 'Cannot remove only pollutant.')
+                for Yi = 1:numel(obj.Years)
+                    Y = obj.YearString(obj.Years{Yi});
+                    obj.FactorsP.(Y) = rmfield(obj.FactorsP.(Y), PollutantName);
                 end
+                obj.Pollutants = fieldnames(obj.Factors.(Y));
             end
         end % function RemovePollutant(obj, PollutantName)
         
@@ -420,9 +468,12 @@ classdef EmissionFactorsClass < handle
             
             obj.VehicleClasses{end+1} = VehicleClass;
             FF = obj.Factors;
-            for Pi = 1:numel(obj.Pollutants)
-                P = obj.Pollutants{Pi};
-                FF.(P).(VehicleClass) = FF.(P).(Like);
+            for Yi = 1:numel(obj.Years)
+                Y = obj.YearString(obj.Years{Yi});
+                for Pi = 1:numel(obj.Pollutants)
+                    P = obj.Pollutants{Pi};
+                    FF.(Y).(P).(VehicleClass) = FF.(Y).(P).(Like);
+                end
             end
             obj.Factors = FF;
             
@@ -442,12 +493,20 @@ classdef EmissionFactorsClass < handle
             if obj.Protected
                 error('EmissionFactorsClass:RemoveVehicleClass:Protected', 'Cannot edit emission factors ''%s'', they are protected.', obj.Name)
             end
+            
+            if numel(obj.VehicleClasses) == 1
+                error('EmissionFactorsClass:RemoveVehicleClasses:LastVehicle', 'Cannot remove only vehicle class.')
+            end
+            
             if ismember(VehicleClass, obj.VehicleClasses);
-                for Pi = 1:numel(obj.Pollutants)
-                    P = obj.Pollutants{Pi};
-                    obj.FactorsP.(P) = rmfield(obj.FactorsP.(P), VehicleClass);
+                for Yi = 1:numel(obj.Years)
+                    Y = obj.YearString(obj.Years{Yi});
+                    for Pi = 1:numel(obj.Pollutants)
+                        P = obj.Pollutants{Pi};
+                        obj.FactorsP.(Y).(P) = rmfield(obj.FactorsP.(Y).(P), VehicleClass);
+                    end
                 end
-                obj.VehicleClasses = fieldnames(obj.Factors.(P));
+                obj.VehicleClasses = fieldnames(obj.Factors.(Y).(P));
             end
         end % function RemoveVehicleClass(obj, VehicleClass)
         
@@ -479,11 +538,14 @@ classdef EmissionFactorsClass < handle
             
             obj.SpeedClasses{end+1} = SpeedClass;
             FF = obj.Factors;
-            for Pi = 1:numel(obj.Pollutants)
-                P = obj.Pollutants{Pi};
-                for Vi = 1:numel(obj.VehicleClasses)
-                    V = obj.VehicleClasses{Vi};
-                    FF.(P).(V).(SpeedClass) = FF.(P).(V).(Like);
+            for Yi = 1:numel(obj.Years)
+                Y = obj.YearString(obj.Years{Yi});
+                for Pi = 1:numel(obj.Pollutants)
+                    P = obj.Pollutants{Pi};
+                    for Vi = 1:numel(obj.VehicleClasses)
+                        V = obj.VehicleClasses{Vi};
+                        FF.(Y).(P).(V).(SpeedClass) = FF.(Y).(P).(V).(Like);
+                    end
                 end
             end
             obj.Factors = FF;
@@ -504,20 +566,40 @@ classdef EmissionFactorsClass < handle
             if obj.Protected
                 error('EmissionFactorsClass:RemoveSpeedClass:Protected', 'Cannot edit emission factors ''%s'', they are protected.', obj.Name)
             end
+            
+            if numel(obj.SpeedClasses) == 1
+                error('EmissionFactorsClass:RemoveSpeedClasses:LastSpeedClass', 'Cannot remove only speed class.')
+            end
+            
             if ismember(SpeedClass, obj.SpeedClasses);
-                for Pi = 1:numel(obj.Pollutants)
-                    P = obj.Pollutants{Pi};
-                    for Vi = 1:numel(obj.VehicleClasses)
-                        V = obj.VehicleClasses{Vi};
-                        obj.FactorsP.(P).(V) = rmfield(obj.FactorsP.(P).(V), SpeedClass);
+                for Yi = 1:numel(obj.Years)
+                    Y = obj.YearString(obj.Years{Yi});
+                    for Pi = 1:numel(obj.Pollutants)
+                        P = obj.Pollutants{Pi};
+                        for Vi = 1:numel(obj.VehicleClasses)
+                            V = obj.VehicleClasses{Vi};
+                            obj.FactorsP.(Y).(P).(V) = rmfield(obj.FactorsP.(Y).(P).(V), SpeedClass);
+                        end
                     end
                 end
-                obj.VehicleClasses = fieldnames(obj.Factors.(P));
+                obj.VehicleClasses = fieldnames(obj.Factors.(Y).(P));
             end
         end % function RemoveSpeedClass(obj, SpeedClass)
     end % methods
     
     methods (Static)
+        function YS = YearString(Y)
+            if ischar(Y)
+                if Y(1) ~= 'Y'
+                    YS = ['Y', Y];
+                else
+                    YS = Y;
+                end
+            else
+                YS = sprintf('Y%04d', Y);
+            end
+        end % function YS = YearStr(Year)
+        
         function obj = ImportFactorStruct(S, varargin)
             % Create a EmissionFactorsClass object from a suitable structure.
             % 
@@ -527,8 +609,8 @@ classdef EmissionFactorsClass < handle
             % INPUTS
             % S        - struct
             %          A structure of emission factors of the collect form,
-            %          e.g. Pollutant - Vehicle Class - Speed Class -
-            %          Value.
+            %          e.g. Year - Pollutant - Vehicle Class - Speed Class
+            %          - Value.
             %
             % OPTIONAL INPUTS
             % Name     - string
@@ -536,11 +618,9 @@ classdef EmissionFactorsClass < handle
             % StagnantSpeedClass  - string
             %          Which speed class should be used for stagnant
             %          traffic.
-            % Year     - the year
             obj = EmissionFactorTools.EmissionFactorsClass;
             Options.Name = 'Unnamed';
             Options.StagnantSpeedClass = 'Auto';
-            Options.Year = -999;
             Options = checkArguments(Options, varargin);
             if isequal(Options.Name, 'Unnamed')
                 Answers = inputdlg('Emission factors name:');
@@ -550,15 +630,15 @@ classdef EmissionFactorsClass < handle
                 Options.Name = Answers{1};
             end
             obj.Name = Options.Name;
-            obj.Year = Options.Year;
-            obj.Pollutants = fieldnames(S);
-            obj.VehicleClasses = fieldnames(S.(obj.Pollutants{1}));
-            obj.SpeedClasses = fieldnames(S.(obj.Pollutants{1}).(obj.VehicleClasses{1}));
+            obj.Years = fieldnames(S);
+            obj.Pollutants = fieldnames(S.(obj.Years{1}));
+            obj.VehicleClasses = fieldnames(S.(obj.Years{1}).(obj.Pollutants{1}));
+            obj.SpeedClasses = fieldnames(S.(obj.Years{1}).(obj.Pollutants{1}).(obj.VehicleClasses{1}));
             if isequal(Options.StagnantSpeedClass, 'Auto')
                 Vs = ones(1, numel(obj.SpeedClasses)); 
                 for SPi = 1:numel(obj.SpeedClasses)
                     SP = obj.SpeedClasses{SPi};
-                    Vs(SPi) = S.(obj.Pollutants{1}).(obj.VehicleClasses{1}).(SP);
+                    Vs(SPi) = S.(obj.Years{1}).(obj.Pollutants{1}).(obj.VehicleClasses{1}).(SP);
                 end
                 [~, MaxI] = max(Vs);
                 obj.StagnantSpeedClass = obj.SpeedClasses{MaxI};

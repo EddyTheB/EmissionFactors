@@ -78,17 +78,17 @@ classdef EmissionFactorsCat < handle
         %% Constructor
         function obj = EmissionFactorsCat(varargin)
             if nargin == 0
-                [DutchStruct, Dyear] = EmissionFactorTools.ReadFromSource.Dutch;
-                Catalogue.Dutch = EmissionFactorTools.EmissionFactorsClass.ImportFactorStruct(DutchStruct, 'Name', 'Dutch', 'StagnantSpeedClass', 'Stagnated', 'Year', Dyear);    
+                DutchStruct = EmissionFactorTools.ReadFromSource.Dutch;
+                Catalogue.Dutch = EmissionFactorTools.EmissionFactorsClass.ImportFactorStruct(DutchStruct, 'Name', 'Dutch', 'StagnantSpeedClass', 'Stagnated');
                 Catalogue.Dutch.Protected = true;
-                [EFTStruct, Eyear] = EmissionFactorTools.ReadFromSource.EFT('Option', 'Default');
-                Catalogue.EFT_Default = EmissionFactorTools.EmissionFactorsClass.ImportFactorStruct(EFTStruct, 'Name', 'EFT_Default', 'StagnantSpeedClass', 'Ignore', 'Year', Eyear);    
+                EFTStruct = EmissionFactorTools.ReadFromSource.EFT('Option', 'Default');
+                Catalogue.EFT_Default = EmissionFactorTools.EmissionFactorsClass.ImportFactorStruct(EFTStruct, 'Name', 'EFT_Default', 'StagnantSpeedClass', 'Ignore');    
                 Catalogue.EFT_Default.Protected = true;
-                [EFTStruct, Eyear] = EmissionFactorTools.ReadFromSource.EFT('Option', 'BusesEuroVI');
-                Catalogue.EFT_BusesEuroVI = EmissionFactorTools.EmissionFactorsClass.ImportFactorStruct(EFTStruct, 'Name', 'EFT_BusesEuroVI', 'StagnantSpeedClass', 'Ignore', 'Year', Eyear);    
+                EFTStruct = EmissionFactorTools.ReadFromSource.EFT('Option', 'BusesEuroVI');
+                Catalogue.EFT_BusesEuroVI = EmissionFactorTools.EmissionFactorsClass.ImportFactorStruct(EFTStruct, 'Name', 'EFT_BusesEuroVI', 'StagnantSpeedClass', 'Ignore');    
                 Catalogue.EFT_BusesEuroVI.Protected = true;
-                [NAEIStruct, Nyear] = EmissionFactorTools.ReadFromSource.EFT('Option', 'Default', 'Year', '2012');
-                Catalogue.NAEI_Default2012 = EmissionFactorTools.EmissionFactorsClass.ImportFactorStruct(NAEIStruct, 'Name', 'NAEI_Default2012', 'StagnantSpeedClass', 'Ignore', 'Year', Nyear);
+                NAEIStruct = EmissionFactorTools.ReadFromSource.EFT('Option', 'Default');
+                Catalogue.NAEI_Default2012 = EmissionFactorTools.EmissionFactorsClass.ImportFactorStruct(NAEIStruct, 'Name', 'NAEI_Default2012', 'StagnantSpeedClass', 'Ignore');
                 Catalogue.NAEI_Default2012.Protected = true;
 
                 %Catalogue.EFT_Default = EmissionFactorTools.EmissionFactorsClass.ImportFactorStruct(EmissionFactorTools.ReadFromSource.EFT('year', 2016), 'Name', 'Dutch', 'StagnantSpeedClass', 'Stagnated');
