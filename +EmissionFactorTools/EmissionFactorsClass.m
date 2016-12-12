@@ -90,6 +90,7 @@ classdef EmissionFactorsClass < handle
     properties (Dependent)
         Name
         Years
+        YearVs
         Pollutants
         VehicleClasses
         SpeedClasses
@@ -129,6 +130,17 @@ classdef EmissionFactorsClass < handle
         function val = get.Years(obj)
             val = obj.YearsP;
         end % function val = get.Years(obj)
+        
+        function val = get.YearVs(obj)
+            Years_ = obj.Years;
+            NumYs = numel(Years_);
+            val = nan(1, NumYs);
+            for Yi = 1:NumYs
+                Y = Years_{Yi};
+                Y = str2double(Y(2:end));
+                val(Yi) = Y;
+            end
+        end % function val = get.YearVs(obj)
         
         function set.Years(obj, val)
             if obj.Protected
