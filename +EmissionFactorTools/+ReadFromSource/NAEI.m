@@ -75,7 +75,9 @@ function [Factors, year] = NAEI(varargin)
             SpeedClass = sprintf('S_%03d', Speed);
             Pollutant = strtrim(raw{rowi, 3});
             Pollutant = strrep(Pollutant, '.', '');
-            Factor = raw{rowi, 4};
+            Factor = 60*60*raw{rowi, 4}; % Multiply to convert from g/km/s to g/km/hr
+                                         % Definately a better way to do this, making use of 
+                                         % EmissionFactorClass 'Units' and 'UnitConversion' properties.
             
             if ~ismember(Pollutant, Pollutants)
                 Pollutants{end+1} = Pollutant; %#ok<AGROW>
