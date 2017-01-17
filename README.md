@@ -11,7 +11,7 @@ Dutch emission factors are taken from published excel spreadsheets downloaded fr
 ### Emission Factor Toolkit
 The Emission Factor Toolkit (EFT) is an excel spreadsheet published by DEFRA. The latest version is available at http://laqm.defra.gov.uk/review-and-assessment/tools/emissions-factors-toolkit.html. Unfortunately, rather than just allowing access to the underlying data, the toolkit insists that users input road information for their specific situation and then calls a macro to retrieve the data. In order to get the data into a useable form the toolkit has been run for NOx, PM10 and PM2.5, for Scotland, for Emission rates, for every year available, and the results placed in a new excel spreadsheet, which is the EFT2016_v7.0_ScotlandResults.xlsx file. This was done using version 7.0 of the toolkit downloaded on the 1st December 2016.
 
-Area was set to Scotland, all roads are "Urban (not london)". Traffic format is "Detailed Option 2" and outputs are "Air Quality Modelling (g/km/s)", each road is assigned a single vehicle so that the units are g/km/s/veh.
+Area was set to Scotland, all roads are "Urban (not london)". Traffic format is "Detailed Option 2" and outputs are "Air Quality Modelling (g/km/s)", each road is assigned a single vehicle (and over 1 hour) so that the units are g/km/s/veh.
 
 EFT only provides emission factors for particulate matter and NOx. Unless otherwise stated NO2 emissions for EFT factors are calculated as a fraction of NOx using the fractions defined in the "NAEI_NO2_Fractions" spreadsheet. These values were taken from the fleet-average-by-area-type sheet of the "PrimaryNO2_factors_NAEIBase_2016_v1.xlsx" spreadsheet available at http://naei.defra.gov.uk/data/ef-transport. Area used was UK (exc London). 
 

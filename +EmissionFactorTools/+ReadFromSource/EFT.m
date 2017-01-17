@@ -53,11 +53,11 @@ function [Factors, year] = EFT(varargin)
         varargin(SFi) = [];
     elseif OpB
         SourceFile = OptionPaths.(varargin{Opi+1});
-        varargin(Opi+1) = [];
-        varargin(Opi) = [];
         if ismember(varargin{Opi+1}, fieldnames(NO2OverridesAll))
             NO2Overrides = NO2OverridesAll.(varargin{Opi+1});
         end
+        varargin(Opi+1) = [];
+        varargin(Opi) = [];
     else
         SourceFile = OptionPaths.Default;
         NO2Overrides = [];
@@ -72,7 +72,6 @@ function [Factors, year] = EFT(varargin)
         ystr_ = ['Y', ystr];
         % Read the source file.
         fprintf('Reading EFT sheet for %s.\n', ystr)
-        SourceFile
         [~, ~, raw] = xlsread(SourceFile, ystr, 'A2:C218');
         if ~isnan(raw{end, end})
             error('EmissionFactorTools:ReadFromSource:EFT:FileToLong', 'There is data beyond the expected end of the file. Investigate ways to improve this fucntion.')
@@ -87,13 +86,11 @@ function [Factors, year] = EFT(varargin)
         for rowi = 1:NumRows
             Name = raw{rowi, 1};
             Name = strsplit(Name, ' ');
-            'aaa'
-            SpeedClass = Name{1}
-            VehClass = Name{2}
+            SpeedClass = Name{1};
+            VehClass = Name{2};
             Pollutant = raw{rowi, 2};
-            Pollutant = strrep(Pollutant, '.', '')
-            Factor = raw{rowi, 3}
-            error('a')
+            Pollutant = strrep(Pollutant, '.', '');
+            Factor = raw{rowi, 3};
         
             if ~ismember(Pollutant, Pollutants)
                 Pollutants{end+1} = Pollutant; %#ok<AGROW>

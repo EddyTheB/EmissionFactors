@@ -111,7 +111,7 @@ function F = Dutch(varargin)
                         Row = PRowStart + YRow + PRowExtra;
                         Col = VColStart + SCol;
                         %fprintf('%s %s %s %d: %dx%d = %f\n', P, V, S, Y, Row, Col, raw{Row, Col})
-                        F.(sprintf('Y%04d', Y)).(P).(V).(S) = raw{Row, Col} * 10^PScale;
+                        F.(sprintf('Y%04d', Y)).(P).(V).(S) = raw{Row, Col} * 10^PScale / (60*60); % divide by 60*60 to convert from g/km/hr to g/km/s
                     end
                 end
             end
