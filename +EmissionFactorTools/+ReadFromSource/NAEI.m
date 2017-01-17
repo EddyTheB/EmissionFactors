@@ -50,7 +50,6 @@ function [Factors, year] = NAEI(varargin)
     else
         SourceFile = OptionPaths.Default;
     end
-    
     [~, years, ~] = xlsfinfo(SourceFile);
     Factors = struct;
     for yi = 1:numel(years)
@@ -75,9 +74,7 @@ function [Factors, year] = NAEI(varargin)
             SpeedClass = sprintf('S_%03d', Speed);
             Pollutant = strtrim(raw{rowi, 3});
             Pollutant = strrep(Pollutant, '.', '');
-            Factor = 60*60*raw{rowi, 4}; % Multiply to convert from g/km/s to g/km/hr
-                                         % Definately a better way to do this, making use of 
-                                         % EmissionFactorClass 'Units' and 'UnitConversion' properties.
+            Factor = raw{rowi, 4};
             
             if ~ismember(Pollutant, Pollutants)
                 Pollutants{end+1} = Pollutant; %#ok<AGROW>
