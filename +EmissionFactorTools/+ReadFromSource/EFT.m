@@ -88,6 +88,11 @@ function [Factors, year] = EFT(varargin)
             Name = strsplit(Name, ' ');
             SpeedClass = Name{1};
             VehClass = Name{2};
+            if isequal(VehClass, 'Mcycle')
+                VehClassX = 'MCycle';
+            else
+                VehClassX = VehClass;
+            end
             Pollutant = raw{rowi, 2};
             Pollutant = strrep(Pollutant, '.', '');
             Factor = raw{rowi, 3};
@@ -101,13 +106,13 @@ function [Factors, year] = EFT(varargin)
             if ~ismember(SpeedClass, SpeedClasses)
                 SpeedClasses{end+1} = SpeedClass; %#ok<AGROW>
             end
-            FactorsY.(Pollutant).(VehClass).(SpeedClass) = Factor;
+            FactorsY.(Pollutant).(VehClassX).(SpeedClass) = Factor;
             if isequal(Pollutant , 'NOx')
                 if ~ismember('NO2', Pollutants)
                     Pollutants{end+1} = 'NO2'; %#ok<AGROW>
                 end
                 NO2Frac = NO2Fracs.(ystr_).(VehClass);
-                FactorsY.NO2.(VehClass).(SpeedClass) = Factor*NO2Frac;
+                FactorsY.NO2.(VehClassX).(SpeedClass) = Factor*NO2Frac;
             end
         end
         Factors.(ystr_) = FactorsY;
