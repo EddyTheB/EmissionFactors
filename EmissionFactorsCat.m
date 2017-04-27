@@ -88,8 +88,24 @@ classdef EmissionFactorsCat < handle
                 Catalogue.EFT_BusesEuroVI = EmissionFactorTools.EmissionFactorsClass.ImportFactorStruct(EFTStruct, 'Name', 'EFT_BusesEuroVI', 'StagnantSpeedClass', 'Ignore');    
                 Catalogue.EFT_BusesEuroVI.Protected = true;
                 NAEIStruct = EmissionFactorTools.ReadFromSource.NAEI('Option', 'Default');
-                Catalogue.NAEI_Default2012 = EmissionFactorTools.EmissionFactorsClass.ImportFactorStruct(NAEIStruct, 'Name', 'NAEI_Default2012', 'StagnantSpeedClass', 'Ignore');
-                Catalogue.NAEI_Default2012.Protected = true;
+                Catalogue.NAEI2012_Default = EmissionFactorTools.EmissionFactorsClass.ImportFactorStruct(NAEIStruct, 'Name', 'NAEI2012_Default', 'StagnantSpeedClass', 'Ignore');
+                Catalogue.NAEI2012_Default.Protected = true;
+                NAEIStruct = EmissionFactorTools.ReadFromSource.NAEI2014('Option', 'Default');
+                Catalogue.NAEI2014_Default = EmissionFactorTools.EmissionFactorsClass.ImportFactorStruct(NAEIStruct, 'Name', 'NAEI2014_Default', 'StagnantSpeedClass', 'Ignore');
+                Catalogue.NAEI2014_Default.Protected = true;
+                NAEIStruct = EmissionFactorTools.ReadFromSource.NAEI2014('Option', 'BusesEuroVI');
+                Catalogue.NAEI2014_BusesEuroVI = EmissionFactorTools.EmissionFactorsClass.ImportFactorStruct(NAEIStruct, 'Name', 'NAEI2014_BusesEuroVI', 'StagnantSpeedClass', 'Ignore');
+                Catalogue.NAEI2014_BusesEuroVI.Protected = true;
+                NAEIStruct = EmissionFactorTools.ReadFromSource.NAEI2014('Option', 'NoDieselCars');
+                Catalogue.NAEI2014_NoDieselCars = EmissionFactorTools.EmissionFactorsClass.ImportFactorStruct(NAEIStruct, 'Name', 'NAEI2014_NoDieselCars', 'StagnantSpeedClass', 'Ignore');
+                Catalogue.NAEI2014_NoDieselCars.Protected = true;
+                %MarkStruct = EmissionFactorTools.ReadFromSource.NAEI2014('Option', 'MarkBusesEuroV');
+                %Catalogue.NAEIMark_BusesEuroV = EmissionFactorTools.EmissionFactorsClass.ImportFactorStruct(MarkStruct, 'Name', 'Mark_BusesEuroV', 'StagnantSpeedClass', 'Ignore');
+                %Catalogue.NAEIMark_BusesEuroV.Protected = true;
+                %MarkStruct = EmissionFactorTools.ReadFromSource.NAEI2014('Option', 'MarkBusesEuroVI');
+                %Catalogue.NAEIMark_BusesEuroVI = EmissionFactorTools.EmissionFactorsClass.ImportFactorStruct(MarkStruct, 'Name', 'Mark_BusesEuroVI', 'StagnantSpeedClass', 'Ignore');
+                %Catalogue.NAEIMark_BusesEuroVI.Protected = true;
+                
                 obj.FactorCatalogue = Catalogue;
                 obj.FactorNameP = obj.FactorNames{1};
                 obj.FactorApportionment = obj.DefaultFactorApportionment();
